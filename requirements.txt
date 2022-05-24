@@ -1,0 +1,11 @@
+# pip install -r requirements.txt
+
+# Base ----------------------------------------
+numpy>=1.18.5
+open3d
+
+
+# Plotting ------------------------------------
+pandas>=1.1.4
+seaborn>=0.11.0
+
