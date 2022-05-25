@@ -1,4 +1,5 @@
 import csv
+import time
 import argparse
 from typing import List
 from tqdm import tqdm
@@ -116,7 +117,12 @@ if __name__ == "__main__":
 
     create_tables(engine, Center_points, Cluster_points)
 
+    start_time_center_points = time.time()
     save_center_points(center_points, Center_points, session)
+    print(f"Saving center points time, sec: {round(time.time() - start_time_center_points, 1)}")
+
+    start_time_cluster_points = time.time()
     save_cluster_points(cluster_points, Cluster_points, session)
+    print(f"Saving cluster points time, sec: {round(time.time() - start_time_center_points, 1)}")
 
     drop_tables(engine, Center_points, Cluster_points)
