@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 import argparse
+import csv
 
 from sklearn.cluster import DBSCAN
 from tqdm import tqdm
@@ -134,6 +135,18 @@ def dbscan_clustering_visuazlization(points: np.array,
     return points, colors
 
 
+def save_points(center_points, cluster_points, cluster_colors, type):
+    np.savetxt(f"center_points_{type}.csv", center_points, delimiter=",")
+
+    with open(f"cluster_points_{type}.csv", "w", newline="", ) as f:
+        writer = csv.writer(f)
+        for cluster_id, (cl_points, cl_colors) in tqdm(enumerate(zip(cluster_points, cluster_colors)),
+                                                       total=len(cluster_points)):
+            for point_id, (point, color) in enumerate(zip(cl_points, cl_colors)):
+                # points.append([cluster_id, point_id, list(point), list(color)])
+                writer.writerow([cluster_id, point_id, point[0], point[1], point[2], color[0], color[1], color[2]])
+
+
 def parse_opt(known=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('data', type=str, help='path to file with cloud data')
@@ -159,6 +172,7 @@ if __name__ == "__main__":
     if type == "dbscan":
         center_points, cluster_points, cluster_colors = dbscan_clustering(points, radius)
         np.savetxt("center_points_dbscan.csv", center_points, delimiter=";")
+        save_points(center_points, cluster_points, cluster_colors, type)
 
         if draw_visualizaton:
             point_vis, colors_vis = dbscan_clustering_visuazlization(points, colors, radius)
@@ -171,7 +185,7 @@ if __name__ == "__main__":
 
     elif type == "voxel":
         center_points, cluster_points, cluster_colors = voxel_clustering(points, colors, radius)
-        np.savetxt("center_points_voxel.csv", center_points, delimiter=";")
+        save_points(center_points, cluster_points, cluster_colors, type)
 
         if draw_visualizaton:
             point_vis, colors_vis = voxel_clustering_visualization(points, colors, radius)
@@ -181,6 +195,8 @@ if __name__ == "__main__":
             o3d.visualization.draw_geometries([pcd],
                                               width=1280,
                                               height=720)
+
+
 
     else:
         print(f"{type} clustering doesn't exist. Please choose from ('voxel', 'dbscan')")

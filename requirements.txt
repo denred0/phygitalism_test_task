@@ -5,6 +5,9 @@ numpy>=1.18.5
 open3d>=0.15.1
 scikit-learn>=1.0.2
 tqdm>=4.64.0
+psycopg2>=2.9.3
+sqlalchemy>=1.4.36
+geoalchemy2>=0.11.1
 
 # Plotting ------------------------------------
 
