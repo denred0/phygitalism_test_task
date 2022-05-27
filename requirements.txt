@@ -10,5 +10,6 @@ sqlalchemy>=1.4.36
 geoalchemy2>=0.11.1
 
 # Plotting ------------------------------------
-
+plotly>=5.8.0
+pandas>=1.3.5
 

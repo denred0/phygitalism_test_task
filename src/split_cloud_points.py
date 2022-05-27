@@ -141,7 +141,7 @@ def save_points(center_points, cluster_points, cluster_colors, type):
     with open(f"cluster_points_{type}.csv", "w", newline="", ) as f:
         writer = csv.writer(f)
         for cluster_id, (cl_points, cl_colors) in tqdm(enumerate(zip(cluster_points, cluster_colors)),
-                                                       total=len(cluster_points)):
+                                                       total=len(cluster_points), desc="Saving"):
             for point_id, (point, color) in enumerate(zip(cl_points, cl_colors)):
                 # points.append([cluster_id, point_id, list(point), list(color)])
                 writer.writerow([cluster_id, point_id, point[0], point[1], point[2], color[0], color[1], color[2]])
