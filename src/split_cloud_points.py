@@ -2,6 +2,7 @@ import numpy as np
 import open3d as o3d
 import argparse
 import csv
+import pickle
 
 from sklearn.cluster import DBSCAN
 from tqdm import tqdm
@@ -136,15 +137,32 @@ def dbscan_clustering_visuazlization(points: np.array,
 
 
 def save_points(center_points, cluster_points, cluster_colors, type):
-    np.savetxt(f"center_points_{type}.csv", center_points, delimiter=",")
 
-    with open(f"cluster_points_{type}.csv", "w", newline="", ) as f:
-        writer = csv.writer(f)
-        for cluster_id, (cl_points, cl_colors) in tqdm(enumerate(zip(cluster_points, cluster_colors)),
-                                                       total=len(cluster_points), desc="Saving"):
-            for point_id, (point, color) in enumerate(zip(cl_points, cl_colors)):
-                # points.append([cluster_id, point_id, list(point), list(color)])
-                writer.writerow([cluster_id, point_id, point[0], point[1], point[2], color[0], color[1], color[2]])
+    assert len(center_points) == len(cluster_points) == len(cluster_colors), "Lenghts mismatch! Check your algorithm."
+
+    # centers
+    center_points_dict = {}
+    for i, point in enumerate(center_points):
+        center_points_dict[i] = point
+
+    with open(f'center_points_{type}.pkl', 'wb') as f:
+        pickle.dump(center_points_dict, f)
+
+    # points
+    cluster_points_dict = {}
+    for i, point in enumerate(cluster_points):
+        cluster_points_dict[i] = point
+
+    with open(f'cluster_points_{type}.pkl', 'wb') as f:
+        pickle.dump(cluster_points_dict, f)
+
+    # colors
+    cluster_color_dict = {}
+    for i, color in enumerate(cluster_colors):
+        cluster_color_dict[i] = color
+
+    with open(f'cluster_colors_{type}.pkl', 'wb') as f:
+        pickle.dump(cluster_color_dict, f)
 
 
 def parse_opt(known=False):
@@ -169,9 +187,10 @@ if __name__ == "__main__":
     points = raw_data[:, :3]
     colors = raw_data[:, 3:6] / 255
 
+    print(f"Points count: {len(points)}")
+
     if type == "dbscan":
         center_points, cluster_points, cluster_colors = dbscan_clustering(points, radius)
-        np.savetxt("center_points_dbscan.csv", center_points, delimiter=";")
         save_points(center_points, cluster_points, cluster_colors, type)
 
         if draw_visualizaton:
