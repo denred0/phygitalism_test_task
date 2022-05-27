@@ -57,47 +57,52 @@ def init_database(user: str,
     return engine, session, Center_points, Cluster_points
 
 
-def create_tables(engine, Center_points, Cluster_points):
+def create_tables(engine, Center_points, Cluster_points) -> None:
     Center_points.__table__.create(engine)
     Cluster_points.__table__.create(engine)
 
 
-def drop_tables(engine, Center_points, Cluster_points):
+def drop_tables(engine, Center_points, Cluster_points) -> None:
     Center_points.__table__.drop(engine)
     Cluster_points.__table__.drop(engine)
 
 
-def save_center_points(center_points: List, Center_points, session):
+def save_center_points(center_points: List,
+                       Center_points,
+                       session,
+                       srid: int) -> None:
     for p in tqdm(center_points, desc="Saving center points"):
         point_val = f"POINT({float(p[0])} {float(p[1])} {float(p[2])})"
-        # point = Center_points(point=WKTElement(point_val, 4326))
-        session.add(Center_points(point=point_val))
+        point = Center_points(point=WKTElement(point_val, srid))
+        session.add(point)
     session.commit()
 
 
-def save_cluster_points(cluster_points: List, Cluster_points, session):
+def save_cluster_points(cluster_points: List,
+                        Cluster_points,
+                        session,
+                        srid: int) -> None:
     for row in tqdm(cluster_points, desc="Saving cluster points"):
         point_val = f"POINT({float(row[2])} {float(row[3])} {float(row[4])})"
-        # point = Cluster_points(point=WKTElement(point_val, 4326))
+        # point = Cluster_points(point=WKTElement(point_val, srid))
 
         color_val = f"POINT({float(row[5])} {float(row[6])} {float(row[7])})"
-        # color = Cluster_points(color=WKTElement(color_val, 4326))
-        session.add(Cluster_points(center_id=int(row[0]), point_id=int(row[1]), point=point_val, color=color_val))
+        # color = Cluster_points(color=WKTElement(color_val, srid))
+        session.add(Cluster_points(center_id=int(row[0]),
+                                   point_id=int(row[1]),
+                                   point=WKTElement(point_val, srid),
+                                   color=WKTElement(color_val, srid)))
 
     session.commit()
 
 
-def select_points_from_bd(engine, center_id):
+def select_points_from_bd(engine,
+                          point: List,
+                          srid: int) -> None:
     with engine.connect() as con:
         rs = con.execute(
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=ST_MakePointM(221104.78766886334, 1906020.5446726466, 302.13441949)"
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=ST_AsEWKT(ST_MakePointM(220854.9513625, 1906057.10005188, 313.23361275), 4326)"
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=ST_AsEWKT( ST_MakePointM(-71.104, 42.315, 10));"
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=ST_GeomFromEWKT('POINT(220854.9513625 1906057.10005188 313.23361275)')"
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=ST_EWKTFromGeom('POINT(220854.9513625 1906057.10005188 313.23361275)')"
-            # "SELECT ST_AsText(point) FROM center_points WHERE point=CAST(ST_Point(220854.9513625, 1906057.10005188, 313.23361275) AS geography)"
-
-            f"SELECT ST_AsText(cl.point) FROM center_points cen INNER JOIN cluster_points cl on cen.id=cl.center_id WHERE cen.id={center_id}"
+            f"SELECT ST_AsText(cl.point) FROM center_points cen INNER JOIN cluster_points cl on cen.id=cl.center_id "
+            f"WHERE cen.point=ST_GeomFromEWKT('SRID={srid};POINTZ({point[0]} {point[1]} {point[2]})')"
         )
 
         x = []
@@ -139,14 +144,16 @@ if __name__ == "__main__":
 
     create_tables(engine, Center_points, Cluster_points)
 
+    srid = 4326
     start_time_center_points = time.time()
-    save_center_points(center_points, Center_points, session)
+    save_center_points(center_points, Center_points, session, srid)
     print(f"Saving center points time: {round(time.time() - start_time_center_points, 1)} sec")
 
     start_time_cluster_points = time.time()
-    save_cluster_points(cluster_points, Cluster_points, session)
+    save_cluster_points(cluster_points, Cluster_points, session, srid)
     print(f"Saving cluster points time: {round(time.time() - start_time_center_points, 1)} sec")
 
-    select_points_from_bd(engine, 1)
+    point = [220990.94025907823, 1906017.9723974576, 307.4823358869958]
+    select_points_from_bd(engine, point, srid)
 
     drop_tables(engine, Center_points, Cluster_points)
