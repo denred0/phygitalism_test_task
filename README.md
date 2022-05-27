@@ -23,3 +23,10 @@ python src/split_cloud_points.py data/fovea_tikal_guatemala_pcloud.asc voxel
 **Additional parameters:**
 <br>_--radius_ - radius of cluster
 <br>_--vis_ - show visualization
+
+## Save and read points from PostGIS
+Run script `postgis_operations.py`
+```python
+python src/postgis_operations.py %path_to_center_points% %path_to_cluster_points% 
+python src/postgis_operations.py center_points_dbscan.csv cluster_points_dbscan.csv
+```
