@@ -1,7 +1,6 @@
 import numpy as np
 import open3d as o3d
 import argparse
-import csv
 import pickle
 
 from sklearn.cluster import DBSCAN
