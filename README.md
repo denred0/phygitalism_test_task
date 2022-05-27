@@ -24,7 +24,7 @@ python src/split_cloud_points.py data/fovea_tikal_guatemala_pcloud.asc voxel
 <br>_--radius_ - radius of cluster
 <br>_--vis_ - show visualization
 
-## Save and read points from PostGIS
+## Save points to PostGIS and read points from PostGIS
 Run script `postgis_operations.py`
 ```python
 python src/postgis_operations.py %path_to_center_points% %path_to_cluster_points% 
